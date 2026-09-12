@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Online Co-op — Tic-Tac-Toe</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="connection-status" class="offline">Connecting...</div>
+
+  <!-- ============ LANDING SCREEN ============ -->
+  <div id="screen-landing" class="screen">
+    <h1>ONLINE CO-OP</h1>
+    <button id="btn-create-room">CREATE ROOM</button>
+    <button id="btn-show-join">JOIN ROOM</button>
+  </div>
+
+  <!-- ============ JOIN SCREEN ============ -->
+  <div id="screen-join" class="screen hidden">
+    <h2>Enter room code</h2>
+    <input id="join-code-input" type="text" maxlength="6" placeholder="e.g. 482913" />
+    <button id="btn-join-room">JOIN</button>
+    <p id="join-error" class="error"></p>
+    <button id="btn-back-to-landing" class="secondary">Back</button>
+  </div>
+
+  <!-- ============ LOBBY SCREEN ============ -->
+  <div id="screen-lobby" class="screen hidden">
+    <h2>ROOM <span id="lobby-room-code"></span></h2>
+    <p class="hint">Share this code with the other player.</p>
+    <ul id="lobby-player-list"></ul>
+    <p id="lobby-status"></p>
+    <button id="btn-start" disabled>START</button>
+  </div>
+
+  <!-- ============ GAME SCREEN (Tic-Tac-Toe) ============ -->
+  <div id="screen-game" class="screen hidden">
+    <h2>ROOM <span id="game-room-code"></span></h2>
+    <p id="your-symbol" class="hint"></p>
+    <p id="disconnect-notice" class="error hidden"></p>
+
+    <div id="board">
+      <button class="cell" data-index="0"></button>
+      <button class="cell" data-index="1"></button>
+      <button class="cell" data-index="2"></button>
+      <button class="cell" data-index="3"></button>
+      <button class="cell" data-index="4"></button>
+      <button class="cell" data-index="5"></button>
+      <button class="cell" data-index="6"></button>
+      <button class="cell" data-index="7"></button>
+      <button class="cell" data-index="8"></button>
+    </div>
+
+    <p id="turn-status" class="status"></p>
+    <button id="btn-play-again" class="hidden">PLAY AGAIN</button>
+  </div>
+
+  <!-- Socket.IO client library, loaded from a CDN -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <!-- Shared constants (must load before network.js and game.js use them) -->
+  <script src="../shared/constants.js"></script>
+
+  <!-- App scripts -->
+  <script src="config.js"></script>
+  <script src="network.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

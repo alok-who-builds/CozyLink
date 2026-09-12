@@ -1,0 +1,135 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #111827;
+  color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#connection-status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #16a34a;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+#connection-status.offline {
+  background: #dc2626;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+button {
+  padding: 10px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+button:disabled {
+  background: #4b5563;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid #6b7280;
+}
+
+input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: #1f2937;
+  color: white;
+  text-align: center;
+}
+
+.error {
+  color: #f87171;
+  min-height: 20px;
+}
+
+.hint {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+#lobby-player-list {
+  list-style: none;
+  padding: 0;
+  font-size: 18px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(3, 90px);
+  grid-template-rows: repeat(3, 90px);
+  gap: 8px;
+}
+
+.cell {
+  font-size: 40px;
+  font-weight: bold;
+  background: #1f2937;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  color: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.cell:hover:not(.taken) {
+  background: #273449;
+}
+
+.cell.taken {
+  cursor: not-allowed;
+}
+
+.cell.winning {
+  background: #166534;
+  border-color: #22c55e;
+}
+
+.cell.shake {
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.status {
+  font-size: 18px;
+  min-height: 24px;
+}
