@@ -10,5 +10,5 @@
 //   'https://your-app-name.onrender.com'
 
 const CONFIG = {
-  SERVER_URL: 'http://localhost:3000'
+  SERVER_URL: 'https://cozylink.onrender.com'
 };
