@@ -3,41 +3,49 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Online Co-op — Tic-Tac-Toe</title>
+<title>CozyLink — Tic-Tac-Toe</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <a class="home-link" href="../index.html">cozylink</a>
 
   <div id="connection-status" class="offline">Connecting...</div>
 
   <!-- ============ LANDING SCREEN ============ -->
   <div id="screen-landing" class="screen">
-    <h1>ONLINE CO-OP</h1>
-    <button id="btn-create-room">CREATE ROOM</button>
-    <button id="btn-show-join">JOIN ROOM</button>
+    <h1>Tic-Tac-Toe</h1>
+    <p class="hint">Play a quick round with a friend, anywhere.</p>
+    <button id="btn-create-room">Create room</button>
+    <button id="btn-show-join">Join room</button>
   </div>
 
   <!-- ============ JOIN SCREEN ============ -->
   <div id="screen-join" class="screen hidden">
     <h2>Enter room code</h2>
     <input id="join-code-input" type="text" maxlength="6" placeholder="e.g. 482913" />
-    <button id="btn-join-room">JOIN</button>
+    <button id="btn-join-room">Join</button>
     <p id="join-error" class="error"></p>
     <button id="btn-back-to-landing" class="secondary">Back</button>
   </div>
 
   <!-- ============ LOBBY SCREEN ============ -->
   <div id="screen-lobby" class="screen hidden">
-    <h2>ROOM <span id="lobby-room-code"></span></h2>
+    <h2>Room <span id="lobby-room-code"></span></h2>
     <p class="hint">Share this code with the other player.</p>
     <ul id="lobby-player-list"></ul>
     <p id="lobby-status"></p>
-    <button id="btn-start" disabled>START</button>
+    <button id="btn-start" disabled>Start</button>
   </div>
 
   <!-- ============ GAME SCREEN (Tic-Tac-Toe) ============ -->
   <div id="screen-game" class="screen hidden">
-    <h2>ROOM <span id="game-room-code"></span></h2>
+    <h2>Room <span id="game-room-code"></span></h2>
     <p id="your-symbol" class="hint"></p>
     <p id="disconnect-notice" class="error hidden"></p>
 
@@ -54,7 +62,7 @@
     </div>
 
     <p id="turn-status" class="status"></p>
-    <button id="btn-play-again" class="hidden">PLAY AGAIN</button>
+    <button id="btn-play-again" class="hidden">Play again</button>
   </div>
 
   <!-- Socket.IO client library, loaded from a CDN -->
