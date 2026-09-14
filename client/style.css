@@ -197,6 +197,10 @@ button:focus-visible {
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
+.cell.o {
+  color: var(--color-berry);
+}
+
 .cell:hover:not(.taken) {
   background: var(--color-paper);
   transform: scale(1.04);
