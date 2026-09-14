@@ -1,11 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=./client/index.html">
-<title>Redirecting to CozyLink...</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CozyLink — small games, real friends</title>
+<meta name="description" content="Small multiplayer games you can play with a friend from anywhere. No installs, no accounts — just a room code." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="landing.css" />
 </head>
 <body>
-<p>Redirecting to <a href="./client/index.html">the game</a>...</p>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <div class="hero-decor" aria-hidden="true">
+      <svg class="doodle doodle-die" viewBox="0 0 60 60" width="46" height="46">
+        <rect x="6" y="6" width="48" height="48" rx="14" fill="none" stroke="var(--color-ink)" stroke-width="3"/>
+        <circle cx="22" cy="22" r="3.2" fill="var(--color-berry)"/>
+        <circle cx="38" cy="38" r="3.2" fill="var(--color-berry)"/>
+        <circle cx="30" cy="30" r="3.2" fill="var(--color-berry)"/>
+      </svg>
+      <svg class="doodle doodle-scribble" viewBox="0 0 80 40" width="64" height="32">
+        <path d="M4 30 Q 20 4, 40 20 T 76 12" fill="none" stroke="var(--color-pine)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <svg class="doodle doodle-xo" viewBox="0 0 60 60" width="40" height="40">
+        <line x1="12" y1="12" x2="30" y2="30" stroke="var(--color-marigold)" stroke-width="4" stroke-linecap="round"/>
+        <line x1="30" y1="12" x2="12" y2="30" stroke="var(--color-marigold)" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="44" cy="44" r="10" fill="none" stroke="var(--color-marigold)" stroke-width="4"/>
+      </svg>
+    </div>
+
+    <h1 class="hero-wordmark">CozyLink</h1>
+    <p class="hero-tagline">small games, real friends, anywhere.</p>
+
+    <div class="scroll-cue" aria-hidden="true">
+      <svg viewBox="0 0 30 44" width="20" height="30">
+        <path d="M15 2 C 12 16, 18 28, 15 42" fill="none" stroke="var(--color-ink)" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M8 34 L 15 42 L 22 34" fill="none" stroke="var(--color-ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>scroll</span>
+    </div>
+  </section>
+
+  <!-- ============ THE IDEA ============ -->
+  <section class="reveal idea-section" id="idea">
+    <svg class="thread" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M4 20 Q 50 2, 100 20 T 196 20" fill="none" stroke="var(--color-pine)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <p class="section-copy">
+      Two people, two devices, one room code. That's the whole idea — no
+      installs, no accounts, just open a link and play with a friend,
+      wherever they happen to be.
+    </p>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="reveal how-section" id="how">
+    <h2 class="section-heading">How it works</h2>
+    <ol class="how-steps">
+      <li>
+        <span class="step-num">1</span>
+        <span class="step-text">Create a room</span>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <span class="step-text">Share the code</span>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <span class="step-text">Play</span>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ THE GAMES ============ -->
+  <section class="reveal games-section" id="games">
+    <svg class="thread thread-alt" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M4 22 Q 50 40, 100 20 T 196 24" fill="none" stroke="var(--color-berry)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h2 class="section-heading">Pick a game</h2>
+
+    <a class="game-card" href="client/index.html">
+      <svg class="game-card-doodle" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M34 8 L34 92" fill="none" stroke="var(--color-ink)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M67 6 L64 94" fill="none" stroke="var(--color-ink)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M6 34 L94 32" fill="none" stroke="var(--color-ink)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M8 67 L92 69" fill="none" stroke="var(--color-ink)" stroke-width="4" stroke-linecap="round"/>
+        <line x1="14" y1="14" x2="27" y2="27" stroke="var(--color-berry)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="27" y1="14" x2="14" y2="27" stroke="var(--color-berry)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="11" fill="none" stroke="var(--color-pine)" stroke-width="5"/>
+        <line x1="73" y1="73" x2="86" y2="86" stroke="var(--color-berry)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="86" y1="73" x2="73" y2="86" stroke="var(--color-berry)" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <h3 class="game-card-title">Tic-Tac-Toe</h3>
+      <p class="game-card-sub">Classic 3-in-a-row, played live with a friend.</p>
+      <span class="game-card-cta">Play</span>
+    </a>
+
+    <p class="games-note">more small games, soon.</p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>cozylink</p>
+</footer>
+
+<script src="landing.js"></script>
 </body>
 </html>
