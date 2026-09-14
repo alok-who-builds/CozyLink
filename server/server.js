@@ -10,7 +10,7 @@ const { Server } = require('socket.io');
 
 const { EVENTS, MAX_PLAYERS_PER_ROOM } = require('../shared/constants');
 const rooms = require('./rooms');
-const ticTacToe = require('./games/tic-tac-toe');
+const games = require('./games/index');
 
 const app = express();
 const server = http.createServer(app);
@@ -42,15 +42,18 @@ io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
   // ---------- CREATE ROOM ----------
-  socket.on(EVENTS.CREATE_ROOM, (callback) => {
+  socket.on(EVENTS.CREATE_ROOM, (gameType, callback) => {
     if (typeof callback !== 'function') return;
 
-    const room = rooms.createRoom(socket.id);
+    // rooms.createRoom() defaults to Tic-Tac-Toe if gameType is undefined —
+    // this keeps the current client (which doesn't pick a game yet) working.
+    const room = rooms.createRoom(socket.id, gameType);
     socket.join(room.code); // Socket.IO's built-in room feature for easy broadcasting
 
     callback({
       success: true,
       roomCode: room.code,
+      gameType: room.gameType,
       playerId: socket.id,
       playerNumber: 1,
       players: Object.values(room.players)
@@ -75,6 +78,7 @@ io.on('connection', (socket) => {
     callback({
       success: true,
       roomCode: code,
+      gameType: result.room.gameType,
       playerId: socket.id,
       playerNumber: 2,
       players
@@ -93,31 +97,34 @@ io.on('connection', (socket) => {
     const playerCount = Object.keys(room.players).length;
     if (playerCount < MAX_PLAYERS_PER_ROOM) return; // can't start with only 1 player
 
-    rooms.startGame(code); // creates a fresh board every time this is called
+    const startedRoom = rooms.startGame(code); // creates a fresh board every time this is called
+    if (!startedRoom) return; // unknown/misconfigured game type — don't broadcast a fake state
 
     io.to(code).emit(EVENTS.GAME_STARTED);
     broadcastGameState(io, room);
   });
 
-  // ---------- PLAYER INPUT (a Tic-Tac-Toe move) ----------
-  // CLIENT -> SERVER. The client just says "I want to play cell 4".
-  // The SERVER decides whether that's actually legal — checking whose
-  // turn it is, whether the cell is free, and whether the game is even
-  // still going — before it becomes real. The client never touches the
-  // board directly.
-  socket.on(EVENTS.PLAYER_INPUT, (move, callback) => {
+  // ---------- PLAYER INPUT (a game action) ----------
+  // CLIENT -> SERVER. The client just says "here's my action" (shape
+  // depends on the game — for Tic-Tac-Toe that's { cell: 4 }). server.js
+  // doesn't need to know what that shape means; it hands the action to
+  // whichever game module this room is running (via the registry) and
+  // that module decides if it's legal. The client never touches the
+  // game state directly.
+  socket.on(EVENTS.PLAYER_INPUT, (action, callback) => {
     const room = rooms.findRoomBySocket(socket.id);
-    if (!room || !room.game) {
+    const game = room ? games[room.gameType] : null;
+
+    if (!room || !room.game || !game) {
       if (typeof callback === 'function') callback({ success: false, error: 'No active game.' });
       return;
     }
 
     const player = room.players[socket.id];
-    const cellIndex = move && typeof move.cell === 'number' ? move.cell : -1;
 
-    // A player can only ever play as THEIR OWN symbol — we look it up
+    // A player can only ever act as THEIR OWN identity — we look it up
     // from their own socket connection, they can't send someone else's.
-    const result = ticTacToe.applyMove(room.game, player.symbol, cellIndex);
+    const result = game.applyMove(room.game, player.symbol, action);
 
     if (result.success) {
       room.game = result.state;
