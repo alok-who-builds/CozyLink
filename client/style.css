@@ -1,34 +1,87 @@
+/* ==========================================================================
+   CozyLink app styles (Play / Join / Lobby / Game screens)
+   Every selector game.js depends on is preserved exactly:
+   #connection-status(.offline), .screen, .hidden, button(.secondary),
+   input, .error, .hint, #lobby-player-list, #board, .cell(.taken/.winning/
+   .shake), .status
+   ========================================================================== */
+
+:root {
+  --color-paper: #FBF3E7;
+  --color-paper-deep: #F3E6D2;
+  --color-ink: #2B2420;
+  --color-berry: #E14868;
+  --color-pine: #2F6F5E;
+  --color-marigold: #F0B429;
+
+  --font-display: 'Shantell Sans', cursive;
+  --font-body: 'Karla', sans-serif;
+
+  --wobble-1: -2deg;
+  --wobble-2: 1.5deg;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: system-ui, sans-serif;
-  background: #111827;
-  color: #f3f4f6;
+  font-family: var(--font-body);
+  background: var(--color-paper);
+  color: var(--color-ink);
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  padding: 20px;
-  box-sizing: border-box;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.home-link {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+  font-size: 1.1rem;
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  opacity: 0.75;
+}
+
+.home-link:hover {
+  opacity: 1;
 }
 
 #connection-status {
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: #16a34a;
-  font-size: 14px;
-  margin-bottom: 20px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: var(--color-pine);
+  color: var(--color-paper);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 1.75rem;
 }
 
 #connection-status.offline {
-  background: #dc2626;
+  background: var(--color-berry);
 }
 
 .screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 1rem;
   text-align: center;
+  max-width: 380px;
+  width: 100%;
+}
+
+.screen h1,
+.screen h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
 }
 
 .hidden {
@@ -36,78 +89,117 @@ body {
 }
 
 button {
-  padding: 10px 24px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  background: #3b82f6;
-  color: white;
+  padding: 0.75rem 1.75rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  border: 3px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-berry);
+  color: var(--color-paper);
   cursor: pointer;
+  transform: rotate(var(--wobble-1));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+button:nth-of-type(2) {
+  transform: rotate(var(--wobble-2));
 }
 
 button:hover:not(:disabled) {
-  background: #2563eb;
+  transform: rotate(0deg) scale(1.04);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+
+button:active:not(:disabled) {
+  transform: rotate(0deg) scale(0.98);
+  box-shadow: 2px 2px 0 var(--color-ink);
 }
 
 button:disabled {
-  background: #4b5563;
+  background: var(--color-paper-deep);
+  color: var(--color-ink);
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 button.secondary {
   background: transparent;
-  border: 1px solid #6b7280;
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  box-shadow: none;
 }
 
 input {
-  padding: 8px 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #4b5563;
-  background: #1f2937;
-  color: white;
+  padding: 0.65rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  border-radius: 12px;
+  border: 3px solid var(--color-ink);
+  background: var(--color-paper-deep);
+  color: var(--color-ink);
   text-align: center;
+  letter-spacing: 0.05em;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-marigold);
+  outline-offset: 2px;
 }
 
 .error {
-  color: #f87171;
-  min-height: 20px;
+  color: var(--color-berry);
+  font-weight: 700;
+  min-height: 1.25rem;
 }
 
 .hint {
-  color: #9ca3af;
-  font-size: 14px;
+  color: var(--color-ink);
+  opacity: 0.7;
+  font-size: 0.95rem;
 }
 
 #lobby-player-list {
   list-style: none;
   padding: 0;
-  font-size: 18px;
+  margin: 0;
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 #board {
   display: grid;
-  grid-template-columns: repeat(3, 90px);
-  grid-template-rows: repeat(3, 90px);
-  gap: 8px;
+  grid-template-columns: repeat(3, clamp(72px, 22vw, 100px));
+  grid-template-rows: repeat(3, clamp(72px, 22vw, 100px));
+  gap: clamp(6px, 2vw, 10px);
+  margin: 0.5rem 0;
 }
 
 .cell {
-  font-size: 40px;
-  font-weight: bold;
-  background: #1f2937;
-  border: 2px solid #374151;
-  border-radius: 8px;
-  color: #f3f4f6;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  font-weight: 700;
+  background: var(--color-paper-deep);
+  border: 3px solid var(--color-ink);
+  border-radius: 16px;
+  color: var(--color-ink);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .cell:hover:not(.taken) {
-  background: #273449;
+  background: var(--color-paper);
+  transform: scale(1.04);
 }
 
 .cell.taken {
@@ -115,8 +207,9 @@ input {
 }
 
 .cell.winning {
-  background: #166534;
-  border-color: #22c55e;
+  background: var(--color-pine);
+  border-color: var(--color-pine);
+  color: var(--color-paper);
 }
 
 .cell.shake {
@@ -130,6 +223,22 @@ input {
 }
 
 .status {
-  font-size: 18px;
-  min-height: 24px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  min-height: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, .cell {
+    transition: none;
+  }
+  .cell.shake {
+    animation: none;
+  }
+}
+
+@media (min-width: 640px) {
+  body {
+    padding: 2.5rem 1.5rem 4rem;
+  }
 }
