@@ -158,6 +158,8 @@ function renderBoard(data) {
   data.board.forEach((value, index) => {
     cellEls[index].textContent = value || '';
     cellEls[index].classList.toggle('taken', !!value);
+    cellEls[index].classList.toggle('x', value === 'X');
+    cellEls[index].classList.toggle('o', value === 'O');
 
     const isWinningCell = data.winningLine && data.winningLine.includes(index);
     cellEls[index].classList.toggle('winning', !!isWinningCell);
