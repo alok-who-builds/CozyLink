@@ -8,10 +8,10 @@
 // for a prototype — if the server restarts, all rooms are lost, which
 // is an acceptable trade-off at this stage.
 
-const { MAX_PLAYERS_PER_ROOM, ROOM_CODE_LENGTH } = require('../shared/constants');
-const ticTacToe = require('./games/tic-tac-toe');
+const { MAX_PLAYERS_PER_ROOM, ROOM_CODE_LENGTH, GAME_TYPES } = require('../shared/constants');
+const games = require('./games/index');
 
-// { roomCode: { code, players: { socketId: playerObject }, started, game } }
+// { roomCode: { code, gameType, players: {...}, started, game } }
 const rooms = {};
 
 function generateRoomCode() {
@@ -24,11 +24,16 @@ function generateRoomCode() {
   return code;
 }
 
-function createRoom(hostSocketId) {
+function createRoom(hostSocketId, gameType) {
+  // A default parameter alone isn't enough here: values sent through
+  // Socket.IO as "undefined" arrive on the server as `null`, not
+  // `undefined`, so we need to explicitly fall back for both.
+  const resolvedGameType = gameType || GAME_TYPES.TIC_TAC_TOE;
   const code = generateRoomCode();
 
   rooms[code] = {
     code,
+    gameType: resolvedGameType,
     players: {
       // Whoever creates the room is always Player 1 / 'X'.
       [hostSocketId]: { id: hostSocketId, number: 1, symbol: 'X' }
@@ -82,12 +87,17 @@ function removePlayerFromRoom(socketId) {
   return { room, roomCode: room.code, roomDeleted: false };
 }
 
-// Starts (or restarts, for "Play Again") a fresh Tic-Tac-Toe match.
+// Starts (or restarts, for "Play Again") a fresh match of whatever game
+// this room is set to play — looked up from the registry, not hardcoded.
 function startGame(code) {
   const room = rooms[code];
   if (!room) return null;
+
+  const game = games[room.gameType];
+  if (!game) return null; // unknown game type — shouldn't happen, but be safe
+
   room.started = true;
-  room.game = ticTacToe.createInitialState();
+  room.game = game.createInitialState();
   return room;
 }
 
