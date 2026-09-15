@@ -37,11 +37,16 @@ function checkWinner(board) {
   return { winner: null, winningLine: null };
 }
 
-// Tries to apply a move. Returns { success: true, state } or
-// { success: false, error }. SECURITY NOTE: this is where we make sure
-// a client can't cheat — e.g. play on someone else's turn, play twice,
-// or play on a cell that's already taken.
-function applyMove(state, symbol, cellIndex) {
+// Tries to apply a move. `action` is whatever raw object the client sent
+// via network.sendInput() — for Tic-Tac-Toe that's { cell: <0-8> }.
+// Returns { success: true, state } or { success: false, error }.
+// SECURITY NOTE: this is where we make sure a client can't cheat — e.g.
+// play on someone else's turn, play twice, or play on a taken cell. We
+// extract and validate `cell` HERE (not in server.js) so server.js never
+// needs to know what a Tic-Tac-Toe move looks like.
+function applyMove(state, symbol, action) {
+  const cellIndex = action && typeof action.cell === 'number' ? action.cell : -1;
+
   if (state.winner) {
     return { success: false, error: 'Game is already over.' };
   }
@@ -49,7 +54,6 @@ function applyMove(state, symbol, cellIndex) {
     return { success: false, error: 'Not your turn.' };
   }
   if (
-    typeof cellIndex !== 'number' ||
     cellIndex < 0 ||
     cellIndex > 8 ||
     state.board[cellIndex] !== null
