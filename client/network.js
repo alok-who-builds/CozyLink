@@ -53,9 +53,22 @@ const network = (() => {
     });
   }
 
-  function createRoom(callback) {
+  // Accepts either createRoom(callback) — defaults to whatever game the
+  // server considers default — or createRoom(gameType, callback) once a
+  // game-picker screen exists and needs to specify which game to play.
+  function createRoom(gameTypeOrCallback, maybeCallback) {
+    let gameType;
+    let callback;
+
+    if (typeof gameTypeOrCallback === 'function') {
+      callback = gameTypeOrCallback; // called as createRoom(callback)
+    } else {
+      gameType = gameTypeOrCallback;
+      callback = maybeCallback; // called as createRoom(gameType, callback)
+    }
+
     connect();
-    socket.emit(GAME_CONSTANTS.EVENTS.CREATE_ROOM, (response) => {
+    socket.emit(GAME_CONSTANTS.EVENTS.CREATE_ROOM, gameType, (response) => {
       if (response.success) {
         roomCode = response.roomCode;
         playerId = response.playerId;
