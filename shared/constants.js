@@ -9,6 +9,13 @@ const GAME_CONSTANTS = {
   MAX_PLAYERS_PER_ROOM: 2,
   ROOM_CODE_LENGTH: 6,
 
+  // Every game type the library currently supports. A room is created
+  // "as" one of these. Adding a new game means adding one line here,
+  // plus one line in server/games/index.js — nothing else needs to change.
+  GAME_TYPES: {
+    TIC_TAC_TOE: 'tic-tac-toe'
+  },
+
   // Names of every Socket.IO event used in this project.
   // These are intentionally GENERIC (not tied to Tic-Tac-Toe specifically),
   // so future games in the library can reuse the exact same event names —
