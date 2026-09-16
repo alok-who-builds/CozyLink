@@ -37,14 +37,17 @@ function checkWinner(board) {
   return { winner: null, winningLine: null };
 }
 
-// Tries to apply a move. `action` is whatever raw object the client sent
-// via network.sendInput() — for Tic-Tac-Toe that's { cell: <0-8> }.
+// Tries to apply a move. `player` is the full player object ({id, number,
+// symbol}) — we only need .symbol here, since that's how this particular
+// game identifies whose turn it is. `action` is whatever raw object the
+// client sent via network.sendInput() — for Tic-Tac-Toe that's { cell: <0-8> }.
 // Returns { success: true, state } or { success: false, error }.
 // SECURITY NOTE: this is where we make sure a client can't cheat — e.g.
 // play on someone else's turn, play twice, or play on a taken cell. We
 // extract and validate `cell` HERE (not in server.js) so server.js never
 // needs to know what a Tic-Tac-Toe move looks like.
-function applyMove(state, symbol, action) {
+function applyMove(state, player, action) {
+  const symbol = player.symbol;
   const cellIndex = action && typeof action.cell === 'number' ? action.cell : -1;
 
   if (state.winner) {
