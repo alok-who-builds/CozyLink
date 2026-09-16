@@ -79,8 +79,12 @@
         <button id="btn-play-again" class="hidden">Play again</button>
       </div>
 
-      <!-- Mobile only: shown by JS when a touch device is detected -->
-      <div id="joystick" class="hidden">
+    </div>
+
+    <!-- Mobile only: shown by JS when a touch device is detected.
+         Lives BELOW the arena, not on top of it, so it never blocks the view. -->
+    <div id="joystick-zone" class="hidden">
+      <div id="joystick">
         <div id="joystick-thumb"></div>
       </div>
     </div>
