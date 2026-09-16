@@ -1,0 +1,243 @@
+/* client/obstacle-survival.css
+   ---------------------------------------------------------------------------
+   Obstacle Survival's own skin. style.css supplies the shared structure
+   (screens, buttons, inputs) and is never edited; everything here is scoped
+   to .os-page so re-declaring the palette can't leak into Tic-Tac-Toe.
+   CozyLink's arena identity: near-black, bone text, one loud red for danger.
+   --------------------------------------------------------------------------- */
+
+.os-page {
+  --color-paper: #0E0D10;
+  --color-paper-deep: #17151A;
+  --color-ink: #F2ECE4;
+  --color-berry: #E23B3B;
+  --color-pine: #2FA8C6;
+  --color-marigold: #F0B429;
+
+  --os-void: #0E0D10;
+  --os-floor: #1C191F;
+  --os-floor-alt: #221E27;
+  --os-block: #3A3242;
+  --os-block-edge: #4C4356;
+  --os-danger: #E23B3B;
+  --os-danger-soft: rgba(226, 59, 59, 0.28);
+  --os-p1: #35C2E3;
+  --os-p2: #F0B429;
+
+  background: var(--os-void);
+  color: var(--color-ink);
+  overflow-x: hidden;
+}
+
+/* style.css colours the status pill green-on-paper; keep it readable here. */
+.os-page #connection-status {
+  background: #2F8F5B;
+  color: #F2ECE4;
+}
+.os-page #connection-status.offline {
+  background: var(--os-danger);
+}
+
+.os-page .screen {
+  max-width: 880px;
+}
+
+.os-page .hint {
+  opacity: 0.65;
+}
+
+/* ---------------- HUD ---------------- */
+#hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 800px;
+  font-family: var(--font-body);
+}
+
+.hud-player {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 2px solid var(--os-block-edge);
+  border-radius: 12px;
+  background: var(--os-floor);
+  min-width: 0;
+}
+
+/* A thin coloured edge tells you at a glance which card is which player. */
+#hud-p1 { border-left: 5px solid var(--os-p1); }
+#hud-p2 { border-right: 5px solid var(--os-p2); }
+
+/* The card belonging to whoever is sitting at this screen gets lit up. */
+.hud-player.is-you {
+  background: var(--os-floor-alt);
+  box-shadow: 0 0 0 2px rgba(242, 236, 228, 0.35);
+}
+
+.hud-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.hud-hearts {
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.hud-score {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  min-width: 1.2ch;
+  text-align: center;
+}
+
+.hud-middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#hud-round {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  opacity: 1;
+}
+
+/* ---------------- Arena ---------------- */
+#arena-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 800 / 500;
+  margin: 0 auto;
+}
+
+#arena-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--os-floor);
+  border: 3px solid var(--color-ink);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  touch-action: none; /* stop mobile scroll/zoom gestures inside the arena */
+}
+
+/* ---------------- Centre overlay (countdown / results) ---------------- */
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  pointer-events: none; /* never blocks the arena... */
+  padding: 1rem;
+}
+
+#overlay button {
+  pointer-events: auto; /* ...except the Play Again button */
+}
+
+#overlay-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 9vw, 4rem);
+  margin: 0;
+  color: var(--color-ink);
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.6);
+}
+
+#overlay-title.danger { color: var(--os-danger); }
+#overlay-title.good { color: var(--os-p1); }
+
+#overlay-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 3vw, 1.15rem);
+  margin: 0;
+  opacity: 0.85;
+}
+
+/* A quick scale-in makes the countdown numbers feel like they land. */
+#overlay-title.pop {
+  animation: os-pop 0.4s ease-out;
+}
+
+@keyframes os-pop {
+  0% { transform: scale(1.7); opacity: 0; }
+  60% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------------- Mobile joystick ---------------- */
+/* Bottom-right, thumb-sized, dark base with a red control — deliberately
+   translucent so it never hides the corner of the arena underneath it. */
+#joystick {
+  position: absolute;
+  right: 3.5%;
+  bottom: 5%;
+  width: 34%;
+  max-width: 132px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(14, 13, 16, 0.55);
+  border: 3px solid rgba(242, 236, 228, 0.45);
+  touch-action: none;
+  user-select: none;
+}
+
+#joystick-thumb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  height: 44%;
+  border-radius: 50%;
+  background: var(--os-danger);
+  border: 3px solid rgba(242, 236, 228, 0.8);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------- Small screens ---------------- */
+@media (max-width: 560px) {
+  .os-page {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  .hud-name {
+    font-size: 0.68rem;
+  }
+
+  .hud-player {
+    padding: 0.3rem 0.45rem;
+    gap: 0.3rem;
+  }
+
+  .hud-hearts {
+    font-size: 0.8rem;
+  }
+
+  .hud-score {
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #overlay-title.pop { animation: none; }
+}
