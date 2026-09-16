@@ -250,6 +250,13 @@ section {
   text-align: center;
 }
 
+/* Stacked cards need real air between them — the blob border-radius and
+   the slight rotation both push a card's visual edge outside its own
+   layout box, so with zero gap the next card's corner pokes into it. */
+.games-section .game-card + .game-card {
+  margin-top: 3.5rem;
+}
+
 .game-card {
   display: block;
   max-width: 320px;
@@ -263,6 +270,12 @@ section {
   transform: rotate(var(--wobble-1));
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 6px 6px 0 var(--color-ink);
+}
+
+/* Alternate the wobble direction so two stacked cards lean apart, not
+   toward each other. */
+.games-section .game-card:nth-child(even) {
+  transform: rotate(calc(var(--wobble-1) * -1));
 }
 
 .game-card:hover,
