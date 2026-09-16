@@ -89,6 +89,9 @@ function removePlayerFromRoom(socketId) {
 
 // Starts (or restarts, for "Play Again") a fresh match of whatever game
 // this room is set to play — looked up from the registry, not hardcoded.
+// We pass the current player list in case the game needs it (e.g. to seed
+// starting positions per player) — Tic-Tac-Toe's createInitialState()
+// takes zero parameters, so passing this is a harmless no-op for it.
 function startGame(code) {
   const room = rooms[code];
   if (!room) return null;
@@ -97,7 +100,7 @@ function startGame(code) {
   if (!game) return null; // unknown game type — shouldn't happen, but be safe
 
   room.started = true;
-  room.game = game.createInitialState();
+  room.game = game.createInitialState(Object.values(room.players));
   return room;
 }
 
