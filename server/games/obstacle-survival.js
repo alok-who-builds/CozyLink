@@ -1,4 +1,3 @@
-
 // server/games/obstacle-survival.js
 //
 // Game #2: Obstacle Survival.
@@ -47,31 +46,34 @@ const ROW_H = H / ROW_COUNT;
 // A few hand-placed obstacle sets. One is picked per round so rounds don't
 // feel identical. Every layout deliberately keeps the far-left and far-right
 // columns clear, because that's where the two players spawn.
+// IMPORTANT: at most ONE obstacle per vertical lane. dangerRect() stops a
+// vertical spike at the nearest obstacle in its lane, so if two obstacles
+// stacked in the SAME lane, the gap between them could never be reached by
+// a top OR a bottom attack — a permanent, unkillable safe pocket. Spreading
+// obstacles one-per-lane guarantees a top+bottom attack pair can always
+// eventually sweep the entire lane except the block's own footprint.
 const LAYOUTS = [
   [
-    { x: 160, y: 100, w: 96, h: 96 },
-    { x: 352, y: 202, w: 96, h: 96 },
-    { x: 544, y: 100, w: 96, h: 96 },
-    { x: 160, y: 304, w: 96, h: 96 },
-    { x: 544, y: 304, w: 96, h: 96 }
+    { x: 155, y: 80,  w: 90, h: 90 },
+    { x: 288, y: 300, w: 90, h: 90 },
+    { x: 422, y: 80,  w: 90, h: 90 },
+    { x: 555, y: 300, w: 90, h: 90 }
   ],
   [
-    { x: 208, y: 76, w: 88, h: 88 },
-    { x: 208, y: 336, w: 88, h: 88 },
-    { x: 504, y: 76, w: 88, h: 88 },
-    { x: 504, y: 336, w: 88, h: 88 },
-    { x: 356, y: 206, w: 88, h: 88 }
+    { x: 155, y: 300, w: 90, h: 90 },
+    { x: 288, y: 80,  w: 90, h: 90 },
+    { x: 422, y: 300, w: 90, h: 90 },
+    { x: 555, y: 80,  w: 90, h: 90 }
   ],
   [
-    { x: 180, y: 190, w: 120, h: 120 },
-    { x: 500, y: 190, w: 120, h: 120 },
-    { x: 344, y: 60, w: 112, h: 80 },
-    { x: 344, y: 360, w: 112, h: 80 }
+    { x: 155, y: 165, w: 90, h: 170 },
+    { x: 422, y: 60,  w: 90, h: 110 },
+    { x: 555, y: 290, w: 90, h: 110 }
   ],
   [
-    { x: 150, y: 120, w: 90, h: 260 },
-    { x: 560, y: 120, w: 90, h: 260 },
-    { x: 355, y: 215, w: 90, h: 70 }
+    { x: 288, y: 110, w: 90, h: 260 },
+    { x: 555, y: 110, w: 90, h: 260 },
+    { x: 422, y: 205, w: 90, h: 70 }
   ]
 ];
 
@@ -256,30 +258,46 @@ function dangerRect(state, side, index) {
 
 // Chooses the next attack pattern and puts the hazard into its WARNING phase.
 function scheduleAttack(state) {
-  const horizontal = Math.random() < HORIZONTAL_ATTACK_CHANCE;
-  const laneTotal = horizontal ? ROW_COUNT : LANE_COUNT;
-
-  // Attack more lanes as the round drags on, but never so many that there's
-  // nowhere left to stand.
-  const maxLanes = Math.max(1, Math.floor(laneTotal / 2) - 1);
-  const wanted = state.attacksThisRound < 4 ? 2 : 3;
-  const laneCount = Math.min(wanted, maxLanes);
-  const indexes = pickDistinct(laneCount, laneTotal);
-
-  // Which edge(s) fire. Sometimes both opposite edges attack the same lanes,
-  // which seals that lane completely — that's the scary one.
-  const roll = Math.random();
-  const sides = horizontal
-    ? (roll < 0.45 ? ['left'] : roll < 0.9 ? ['right'] : ['left', 'right'])
-    : (roll < 0.4 ? ['top'] : roll < 0.8 ? ['bottom'] : ['top', 'bottom']);
+  // Every 4th attack is a PINCER SWEEP: both axes fire at once, so the
+  // pocket a block shields from one side is not shielded from the other.
+  // Without this, a player can park permanently in an obstacle's shadow —
+  // the whole point of the shadow is a brief hiding spot, not a home base.
+  const sweep = state.attacksThisRound > 0 && state.attacksThisRound % 4 === 3;
 
   const rects = [];
-  sides.forEach((side) => {
-    indexes.forEach((index) => {
-      const rect = dangerRect(state, side, index);
-      if (rect.w > 0 && rect.h > 0) rects.push(rect);
+  const sidesUsed = [];
+
+  function fireAxis(horizontal) {
+    const laneTotal = horizontal ? ROW_COUNT : LANE_COUNT;
+    const maxLanes = Math.max(1, Math.floor(laneTotal / 2) - 1);
+    const wanted = state.attacksThisRound < 4 ? 2 : 3;
+    const laneCount = Math.min(wanted, maxLanes);
+    const indexes = pickDistinct(laneCount, laneTotal);
+
+    // Both opposite edges fire together often — that's what seals a lane
+    // completely (no shadow survives it at all), which is what stops camping.
+    const roll = Math.random();
+    const sides = horizontal
+      ? (roll < 0.3 ? ['left'] : roll < 0.6 ? ['right'] : ['left', 'right'])
+      : (roll < 0.3 ? ['top'] : roll < 0.6 ? ['bottom'] : ['top', 'bottom']);
+
+    sides.forEach((side) => {
+      indexes.forEach((index) => {
+        const rect = dangerRect(state, side, index);
+        if (rect.w > 0 && rect.h > 0) rects.push(rect);
+      });
     });
-  });
+    sidesUsed.push(...sides);
+  }
+
+  if (sweep) {
+    fireAxis(false);
+    fireAxis(true);
+  } else {
+    fireAxis(Math.random() < HORIZONTAL_ATTACK_CHANCE);
+  }
+  const horizontal = sweep ? true : sidesUsed[0] === 'left' || sidesUsed[0] === 'right';
+  const sides = sidesUsed;
 
   // Reaction time shrinks slightly with each attack, so rounds build tension.
   const warning = Math.max(
@@ -293,7 +311,6 @@ function scheduleAttack(state) {
     duration: warning,
     horizontal,
     sides,
-    indexes,
     rects,
     hitIds: [] // who has already taken damage from THIS attack
   };
@@ -383,6 +400,17 @@ function inputVector(input) {
 // Moves one axis at a time and undoes that axis if it lands inside a block.
 // Doing the axes separately is what lets a player slide along a wall instead
 // of sticking to it.
+// Two players are NOT allowed to occupy the same space — they can bump
+// and jostle each other, which matters a lot right next to a spike lane
+// (you can shove someone, or get shoved, at exactly the wrong moment).
+function otherPlayerBlocks(state, entity) {
+  const box = playerBox(entity);
+  return Object.values(state.entities).some((other) => {
+    if (other === entity || !other.alive) return false;
+    return rectsOverlap(box, playerBox(other));
+  });
+}
+
 function moveEntity(state, entity, dt) {
   const { vx, vy } = inputVector(entity.input);
   if (vx === 0 && vy === 0) return;
@@ -391,13 +419,13 @@ function moveEntity(state, entity, dt) {
 
   const originalX = entity.x;
   entity.x = Math.max(HALF, Math.min(W - HALF, entity.x + vx * distance));
-  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o))) {
+  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o)) || otherPlayerBlocks(state, entity)) {
     entity.x = originalX;
   }
 
   const originalY = entity.y;
   entity.y = Math.max(HALF, Math.min(H - HALF, entity.y + vy * distance));
-  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o))) {
+  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o)) || otherPlayerBlocks(state, entity)) {
     entity.y = originalY;
   }
 }
