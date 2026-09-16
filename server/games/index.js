@@ -7,10 +7,11 @@
 // server.js, rooms.js, or network.js needs to change.
 
 const ticTacToe = require('./tic-tac-toe');
+const obstacleSurvival = require('./obstacle-survival');
 
 module.exports = {
-  'tic-tac-toe': ticTacToe
+  'tic-tac-toe': ticTacToe,
+  'obstacle-survival': obstacleSurvival
 
-  // When you add Game #2, register it the same way, e.g.:
-  // 'rock-paper-scissors': require('./rock-paper-scissors'),
+  // When you add Game #3, register it the same way.
 };
