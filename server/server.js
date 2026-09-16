@@ -124,7 +124,11 @@ io.on('connection', (socket) => {
 
     // A player can only ever act as THEIR OWN identity — we look it up
     // from their own socket connection, they can't send someone else's.
-    const result = game.applyMove(room.game, player.symbol, action);
+    // We pass the whole player object (not just .symbol) because not every
+    // game uses X/O-style symbols — a movement game, for instance, cares
+    // about .id and .number instead. Each game module reads whichever
+    // field actually makes sense for it.
+    const result = game.applyMove(room.game, player, action);
 
     if (result.success) {
       room.game = result.state;
@@ -141,6 +145,16 @@ io.on('connection', (socket) => {
     const result = rooms.removePlayerFromRoom(socket.id);
     if (!result || result.roomDeleted) return;
 
+    // Same opt-in pattern as tick(): if a game cares that someone left (a
+    // real-time game needs to stop simulating a match that can't continue),
+    // it exports handlePlayerLeft(). Tic-Tac-Toe doesn't, so nothing changes
+    // for it — the client-side disconnect notice already covers that case.
+    const game = games[result.room.gameType];
+    if (result.room.game && game && typeof game.handlePlayerLeft === 'function') {
+      result.room.game = game.handlePlayerLeft(result.room.game, { id: socket.id });
+      broadcastGameState(io, result.room);
+    }
+
     io.to(result.roomCode).emit(EVENTS.PLAYER_LEFT, { playerId: socket.id });
   });
 
@@ -154,3 +168,29 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// ---------- GAME TICK LOOP ----------
+// Some games (like real-time movement games) need continuous simulation
+// between player inputs — e.g. someone holding "W" down should keep moving
+// even though they only sent one input message when they first pressed it.
+// Turn-based games like Tic-Tac-Toe don't need this at all: they simply
+// don't export a tick() function, so this loop skips them silently and
+// has zero effect on how they work.
+const TICK_MS = 1000 / 30; // 30 simulation steps per second
+let lastTickTime = Date.now();
+
+setInterval(() => {
+  const now = Date.now();
+  const deltaSeconds = (now - lastTickTime) / 1000;
+  lastTickTime = now;
+
+  Object.values(rooms.getAllRooms()).forEach((room) => {
+    if (!room.started || !room.game) return;
+
+    const game = games[room.gameType];
+    if (!game || typeof game.tick !== 'function') return; // e.g. Tic-Tac-Toe: no-op
+
+    room.game = game.tick(room.game, deltaSeconds);
+    broadcastGameState(io, room);
+  });
+}, TICK_MS);
