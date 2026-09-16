@@ -13,7 +13,49 @@ const GAME_CONSTANTS = {
   // "as" one of these. Adding a new game means adding one line here,
   // plus one line in server/games/index.js — nothing else needs to change.
   GAME_TYPES: {
-    TIC_TAC_TOE: 'tic-tac-toe'
+    TIC_TAC_TOE: 'tic-tac-toe',
+    OBSTACLE_SURVIVAL: 'obstacle-survival'
+  },
+
+  // Config specific to Obstacle Survival (Game #2). Kept in its own
+  // namespace rather than mixed into the top-level constants, since these
+  // numbers are meaningless to Tic-Tac-Toe or any other future game —
+  // this is exactly why each game gets to define its own shape of things.
+  // Client and server both read from here so they can never disagree
+  // about arena size or speed.
+  OBSTACLE_SURVIVAL: {
+    ARENA_WIDTH: 800,
+    ARENA_HEIGHT: 500,
+    PLAYER_SIZE: 32,
+    PLAYER_SPEED: 220, // pixels per second
+    TICK_RATE: 30, // server simulation steps per second, for this game only
+
+    // --- Match / health rules (kept separate from movement + hazards so
+    // --- these can be re-tuned later without touching gameplay code) ---
+    MAX_HP: 3,
+    POINTS_TO_WIN: 5,
+
+    // --- Hazard lanes ---
+    // The arena is sliced into vertical LANES (for spikes attacking from
+    // the top/bottom edges) and horizontal ROWS (for the left/right edges).
+    // An attack always leaves most of the arena safe, so there is always
+    // somewhere to run to.
+    LANE_COUNT: 6,
+    ROW_COUNT: 4,
+    HORIZONTAL_ATTACK_CHANCE: 0.25, // mostly top/bottom, occasionally sideways
+
+    // --- Timings, in seconds ---
+    TIMING: {
+      COUNTDOWN: 3,      // "3 - 2 - 1" before a round starts
+      WARNING_MAX: 1.5,  // reaction time given by the red warning at round start
+      WARNING_MIN: 0.85, // reaction time after the round has ramped up
+      WARNING_STEP: 0.07,// how much shorter each successive warning gets
+      ATTACK: 0.45,      // how long the spikes stay extended
+      RECOVER: 1.0,      // calm gap before the next warning begins
+      ROUND_END: 2.6,    // how long the round result stays on screen
+      HURT: 0.45,        // hurt/flash animation length
+      INVULN: 0.9        // damage cooldown — can't be hit again during this
+    }
   },
 
   // Names of every Socket.IO event used in this project.
