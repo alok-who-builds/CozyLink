@@ -713,7 +713,7 @@ function setupJoystick() {
 
   if (!isTouchDevice()) return;
 
-  joystick.classList.remove('hidden');
+  document.getElementById('joystick-zone').classList.remove('hidden');
   document.getElementById('controls-hint').textContent = 'Drag the joystick to move.';
 
   let activeTouchId = null;
