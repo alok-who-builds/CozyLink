@@ -33,7 +33,7 @@ const GAME_CONSTANTS = {
     // --- Match / health rules (kept separate from movement + hazards so
     // --- these can be re-tuned later without touching gameplay code) ---
     MAX_HP: 3,
-    POINTS_TO_WIN: 5,
+    POINTS_TO_WIN: 3,
 
     // --- Hazard lanes ---
     // The arena is sliced into vertical LANES (for spikes attacking from
