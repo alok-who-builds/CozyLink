@@ -244,6 +244,19 @@ section {
   }
 }
 
+html, body {
+  /* Deterrent only — stops casual copy/selection, not page-source access.
+     Real code viewing (view-source, DevTools) can never be blocked client-side. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* ============ THE GAMES ============ */
 
 .games-section {
