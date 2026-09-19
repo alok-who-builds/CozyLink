@@ -128,5 +128,11 @@
 </footer>
 
 <script src="landing.js"></script>
+<script>
+  // Deterrent only — stops casual right-click-copy, not page-source access.
+  // landing.js is untouched; this is kept separate on purpose.
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  document.addEventListener('selectstart', function (e) { e.preventDefault(); });
+</script>
 </body>
 </html>
