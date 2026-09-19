@@ -39,6 +39,7 @@ const {
 const HALF = PLAYER_SIZE / 2;
 const LANE_W = W / LANE_COUNT;
 const ROW_H = H / ROW_COUNT;
+const PUSH_STRENGTH = 6; // how much actively pushing "into" someone resists being displaced
 
 // ---------------------------------------------------------------------------
 // 1. ARENA LAYOUTS
@@ -224,7 +225,13 @@ function applyMove(state, player, action) {
 // How far a spike coming from `side` can reach into a lane before an obstacle
 // stops it. This is what makes hiding behind a block actually work: the area
 // in a block's shadow never becomes part of the danger rectangle.
-function dangerRect(state, side, index) {
+//
+// `reach` is an optional extra distance PAST the blocking obstacle. Most
+// attacks leave it at 0 — full, honest hiding. Occasionally an attack rolls
+// a small positive reach (a "thinner" spike variant), letting it poke a
+// little further into a block's shadow so the tiny corner right at a block's
+// edge doesn't become a permanent, never-swept dead spot.
+function dangerRect(state, side, index, reach = 0) {
   if (side === 'top' || side === 'bottom') {
     const x = index * LANE_W;
     const lane = { x, y: 0, w: LANE_W, h: H };
@@ -233,11 +240,13 @@ function dangerRect(state, side, index) {
     if (side === 'top') {
       let depth = H;
       blockers.forEach((o) => { depth = Math.min(depth, o.y); });
+      depth = Math.min(H, depth + reach);
       return { x, y: 0, w: LANE_W, h: Math.max(0, depth), side };
     }
 
     let startY = 0;
     blockers.forEach((o) => { startY = Math.max(startY, o.y + o.h); });
+    startY = Math.max(0, startY - reach);
     return { x, y: startY, w: LANE_W, h: Math.max(0, H - startY), side };
   }
 
@@ -248,11 +257,13 @@ function dangerRect(state, side, index) {
   if (side === 'left') {
     let depth = W;
     blockers.forEach((o) => { depth = Math.min(depth, o.x); });
+    depth = Math.min(W, depth + reach);
     return { x: 0, y, w: Math.max(0, depth), h: ROW_H, side };
   }
 
   let startX = 0;
   blockers.forEach((o) => { startX = Math.max(startX, o.x + o.w); });
+  startX = Math.max(0, startX - reach);
   return { x: startX, y, w: Math.max(0, W - startX), h: ROW_H, side };
 }
 
@@ -263,6 +274,13 @@ function scheduleAttack(state) {
   // Without this, a player can park permanently in an obstacle's shadow —
   // the whole point of the shadow is a brief hiding spot, not a home base.
   const sweep = state.attacksThisRound > 0 && state.attacksThisRound % 4 === 3;
+
+  // ~25% of attacks are "deep reach": a bit thinner overall, but able to
+  // poke DEEP_REACH pixels past a block's edge. Most attacks still respect
+  // the full shadow, so hiding behind a block generally works — this just
+  // stops the exact corner right at a block's edge from being permanently
+  // untouchable.
+  const deepReach = Math.random() < 0.25 ? 42 : 0;
 
   const rects = [];
   const sidesUsed = [];
@@ -283,7 +301,7 @@ function scheduleAttack(state) {
 
     sides.forEach((side) => {
       indexes.forEach((index) => {
-        const rect = dangerRect(state, side, index);
+        const rect = dangerRect(state, side, index, deepReach);
         if (rect.w > 0 && rect.h > 0) rects.push(rect);
       });
     });
@@ -399,18 +417,9 @@ function inputVector(input) {
 
 // Moves one axis at a time and undoes that axis if it lands inside a block.
 // Doing the axes separately is what lets a player slide along a wall instead
-// of sticking to it.
-// Two players are NOT allowed to occupy the same space — they can bump
-// and jostle each other, which matters a lot right next to a spike lane
-// (you can shove someone, or get shoved, at exactly the wrong moment).
-function otherPlayerBlocks(state, entity) {
-  const box = playerBox(entity);
-  return Object.values(state.entities).some((other) => {
-    if (other === entity || !other.alive) return false;
-    return rectsOverlap(box, playerBox(other));
-  });
-}
-
+// of sticking to it. Player-vs-player contact is NOT resolved here — that's
+// a separate, tunable step (resolvePlayerPush, below) so movement against
+// the world and shoving another person can be reasoned about independently.
 function moveEntity(state, entity, dt) {
   const { vx, vy } = inputVector(entity.input);
   if (vx === 0 && vy === 0) return;
@@ -419,14 +428,87 @@ function moveEntity(state, entity, dt) {
 
   const originalX = entity.x;
   entity.x = Math.max(HALF, Math.min(W - HALF, entity.x + vx * distance));
-  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o)) || otherPlayerBlocks(state, entity)) {
+  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o))) {
     entity.x = originalX;
   }
 
   const originalY = entity.y;
   entity.y = Math.max(HALF, Math.min(H - HALF, entity.y + vy * distance));
-  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o)) || otherPlayerBlocks(state, entity)) {
+  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o))) {
     entity.y = originalY;
+  }
+}
+
+// Snaps a player back onto valid ground: inside the arena, outside every
+// obstacle. Used after a push might have shoved someone into the wall or a
+// block — a shove should never let anyone clip through solid geometry.
+function settleAgainstWorld(state, entity, fallbackX, fallbackY) {
+  entity.x = Math.max(HALF, Math.min(W - HALF, entity.x));
+  entity.y = Math.max(HALF, Math.min(H - HALF, entity.y));
+  if (state.obstacles.some((o) => rectsOverlap(playerBox(entity), o))) {
+    entity.x = fallbackX;
+    entity.y = fallbackY;
+  }
+}
+
+// Two players can never fully overlap, but who gives ground is decided by
+// effort, not just proximity: whoever is actively pushing INTO the other
+// holds their ground; whoever isn't (idle, or moving some other direction)
+// gets displaced. Push equally hard into each other and neither one budges
+// — the forces cancel and you're just pressed together.
+function resolvePlayerPush(state) {
+  const entities = Object.values(state.entities).filter((e) => e.alive);
+
+  for (let i = 0; i < entities.length; i++) {
+    for (let j = i + 1; j < entities.length; j++) {
+      const a = entities[i];
+      const b = entities[j];
+
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const overlapX = PLAYER_SIZE - Math.abs(dx);
+      const overlapY = PLAYER_SIZE - Math.abs(dy);
+      if (overlapX <= 0 || overlapY <= 0) continue; // not touching
+
+      // Resolve along whichever axis is penetrating LESS — the standard
+      // "push apart along the shallowest overlap" trick, so a push reads
+      // as a clean shove sideways rather than a diagonal jolt.
+      const axis = overlapX < overlapY ? 'x' : 'y';
+      const overlap = axis === 'x' ? overlapX : overlapY;
+      const sign = axis === 'x' ? (dx >= 0 ? 1 : -1) : (dy >= 0 ? 1 : -1);
+      const normal = axis === 'x' ? { x: sign, y: 0 } : { x: 0, y: sign }; // points from a toward b
+
+      // How hard is each player actively pushing ALONG this exact axis, in
+      // the direction of the other player? Moving away, sideways, or not
+      // moving at all all count as zero — only genuine "into them" effort
+      // earns you ground.
+      const dirA = inputVector(a.input);
+      const dirB = inputVector(b.input);
+      const effortA = Math.max(0, dirA.vx * normal.x + dirA.vy * normal.y);
+      const effortB = Math.max(0, dirB.vx * -normal.x + dirB.vy * -normal.y);
+
+      // Treat push effort as extra "weight": the harder you're pushing,
+      // the more you resist being displaced. Equal effort -> equal weight
+      // -> the correction splits 50/50 and both simply stop advancing.
+      const weightA = 1 + effortA * PUSH_STRENGTH;
+      const weightB = 1 + effortB * PUSH_STRENGTH;
+      const shareA = weightB / (weightA + weightB); // how much of the overlap A gives up
+      const shareB = weightA / (weightA + weightB);
+
+      const prevA = { x: a.x, y: a.y };
+      const prevB = { x: b.x, y: b.y };
+
+      if (axis === 'x') {
+        a.x -= sign * overlap * shareA;
+        b.x += sign * overlap * shareB;
+      } else {
+        a.y -= sign * overlap * shareA;
+        b.y += sign * overlap * shareB;
+      }
+
+      settleAgainstWorld(state, a, prevA.x, prevA.y);
+      settleAgainstWorld(state, b, prevB.x, prevB.y);
+    }
   }
 }
 
@@ -505,6 +587,7 @@ function tick(state, dt) {
     countdownTimers(entity, step);
     if (entity.alive) moveEntity(state, entity, step); // dead players can't move
   });
+  resolvePlayerPush(state);
 
   updateHazard(state, step);
   checkRoundOver(state);
