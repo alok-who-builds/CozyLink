@@ -42,7 +42,7 @@ const GAME_CONSTANTS = {
     // somewhere to run to.
     LANE_COUNT: 6,
     ROW_COUNT: 4,
-    HORIZONTAL_ATTACK_CHANCE: 0.25, // mostly top/bottom, occasionally sideways
+    HORIZONTAL_ATTACK_CHANCE: 0.35, // mostly top/bottom, occasionally sideways
 
     // --- Timings, in seconds ---
     TIMING: {
