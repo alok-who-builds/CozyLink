@@ -24,6 +24,7 @@
   --wobble-3: -1deg;
 
   --blob-1: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  --blob-2: 42% 58% 62% 38% / 40% 45% 55% 60%;
 }
 
 * {
@@ -32,6 +33,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 4.5rem; /* keeps anchored sections clear of the fixed nav */
 }
 
 body {
@@ -41,6 +43,17 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
   overflow-x: hidden;
+
+  /* Deterrent only — stops casual copy/selection, not page-source access.
+     Real code viewing (view-source, DevTools) can never be blocked client-side. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 main {
@@ -54,6 +67,115 @@ section {
   margin: 0 auto;
   position: relative;
   width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+/* ============ NAV ============ */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(251, 243, 231, 0.82);
+  backdrop-filter: blur(6px);
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.site-nav.is-scrolled {
+  border-bottom-color: var(--color-ink);
+  box-shadow: 0 4px 0 rgba(43, 36, 32, 0.05);
+}
+
+.nav-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--color-berry);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.nav-logo-spark {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  animation: spin-slow 9s linear infinite;
+}
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 1.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-berry);
+  transition: right 0.2s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a:focus-visible::after {
+  right: 0;
+}
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--color-paper);
+  background: var(--color-berry);
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 3px 3px 0 var(--color-ink);
+}
+
+.nav-cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+.nav-cta:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--color-ink);
+}
+
+@media (min-width: 640px) {
+  .nav-links {
+    display: flex;
+  }
 }
 
 /* ============ HERO ============ */
@@ -91,6 +213,56 @@ section {
   animation: fade-in 0.8s ease 0.9s forwards;
 }
 
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 2.25rem;
+  opacity: 0;
+  animation: fade-in 0.8s ease 1.15s forwards;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  color: var(--color-paper);
+  background: var(--color-berry);
+  border: 3px solid var(--color-ink);
+  border-radius: 999px;
+  padding: 0.85rem 2rem;
+  box-shadow: 5px 5px 0 var(--color-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--color-ink);
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--color-ink);
+}
+
+.link-how {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--color-ink);
+  opacity: 0.75;
+}
+
+.link-how:hover {
+  opacity: 1;
+}
+
 @keyframes settle {
   60% {
     opacity: 1;
@@ -117,14 +289,30 @@ section {
   opacity: 0.85;
 }
 
-.doodle-die   { top: 14%;  left: 10%; }
-.doodle-scribble { top: 22%; right: 8%; }
-.doodle-xo    { bottom: 16%; left: 14%; }
+.doodle-die        { top: 14%;  left: 8%; }
+.doodle-scribble    { top: 22%; right: 7%; }
+.doodle-xo          { bottom: 18%; left: 11%; }
+.doodle-controller  { top: 10%; right: 12%; display: none; }
+.doodle-cards       { bottom: 12%; right: 9%; display: none; }
+.doodle-heart       { top: 42%; left: 4%; display: none; }
+.doodle-star        { top: 8%; left: 32%; }
 
-@media (min-width: 640px) {
-  .doodle-die   { top: 18%; left: 15%; }
-  .doodle-scribble { top: 24%; right: 14%; }
-  .doodle-xo    { bottom: 20%; left: 20%; }
+@media (min-width: 560px) {
+  .doodle-die        { top: 18%; left: 13%; }
+  .doodle-scribble    { top: 24%; right: 13%; }
+  .doodle-xo          { bottom: 20%; left: 18%; }
+  .doodle-controller  { display: block; top: 12%; right: 18%; }
+  .doodle-cards       { display: block; bottom: 14%; right: 15%; }
+  .doodle-heart       { display: block; top: 44%; left: 9%; }
+  .doodle-star        { top: 9%; left: 36%; }
+}
+
+@media (min-width: 900px) {
+  .doodle-die        { left: 17%; }
+  .doodle-scribble    { right: 17%; }
+  .doodle-controller  { right: 22%; }
+  .doodle-cards       { right: 19%; }
+  .doodle-heart       { left: 13%; }
 }
 
 .scroll-cue {
@@ -173,10 +361,18 @@ section {
   stroke-dashoffset: 0;
 }
 
-/* ============ THE IDEA ============ */
+/* ============ ABOUT ============ */
 
-.idea-section {
+.about-section {
   text-align: left;
+}
+
+.about-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
 }
 
 .section-copy {
@@ -185,7 +381,19 @@ section {
   margin: 0;
 }
 
-/* ============ HOW IT WORKS ============ */
+.about-doodle {
+  width: 150px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .about-grid {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
 
 .section-heading {
   font-family: var(--font-display);
@@ -193,18 +401,21 @@ section {
   font-size: clamp(2rem, 6vw, 2.75rem);
   margin: 0 0 2rem;
   color: var(--color-ink);
+  text-align: center;
 }
 
-.how-section {
-  text-align: left;
+.section-heading-tight {
+  margin-bottom: 2.25rem;
 }
+
+/* ============ HOW IT WORKS ============ */
 
 .how-steps {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
@@ -217,64 +428,83 @@ section {
 .how-steps li:nth-child(1) { transform: rotate(var(--wobble-1)); }
 .how-steps li:nth-child(2) { transform: rotate(var(--wobble-2)); }
 .how-steps li:nth-child(3) { transform: rotate(var(--wobble-3)); }
+.how-steps li:nth-child(4) { transform: rotate(var(--wobble-2)); }
 
-.step-num {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.4rem;
-  width: 2.5rem;
-  height: 2.5rem;
+.step-icon {
+  width: 2.75rem;
+  height: 2.75rem;
   flex-shrink: 0;
   border: 3px solid var(--color-pine);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-pine);
+  background: var(--color-paper);
+}
+
+.step-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .step-text {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 780px) {
   .how-steps {
-    flex-direction: row;
-    gap: 3rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
   }
-}
-
-html, body {
-  /* Deterrent only — stops casual copy/selection, not page-source access.
-     Real code viewing (view-source, DevTools) can never be blocked client-side. */
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-
-input, textarea {
-  -webkit-user-select: text;
-  user-select: text;
+  .how-steps li {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.6rem;
+  }
 }
 
 /* ============ THE GAMES ============ */
 
 .games-section {
   text-align: center;
+  max-width: 980px;
 }
 
-/* Stacked cards need real air between them — the blob border-radius and
-   the slight rotation both push a card's visual edge outside its own
-   layout box, so with zero gap the next card's corner pokes into it. */
-.games-section .game-card + .game-card {
-  margin-top: 3.5rem;
+.games-sub {
+  margin: -1rem 0 2.75rem;
+  opacity: 0.75;
+  font-size: 1rem;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+@media (min-width: 680px) {
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 620px;
+  }
+}
+
+@media (min-width: 980px) {
+  .games-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: none;
+  }
 }
 
 .game-card {
-  display: block;
-  max-width: 320px;
-  margin: 0 auto;
-  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 2.25rem 1.5rem 1.75rem;
   background: var(--color-paper-deep);
   border: 3px solid var(--color-ink);
   border-radius: var(--blob-1);
@@ -285,23 +515,52 @@ input, textarea {
   box-shadow: 6px 6px 0 var(--color-ink);
 }
 
-/* Alternate the wobble direction so two stacked cards lean apart, not
-   toward each other. */
-.games-section .game-card:nth-child(even) {
-  transform: rotate(calc(var(--wobble-1) * -1));
+.games-grid .game-card:nth-child(2) {
+  border-radius: var(--blob-2);
+  transform: rotate(var(--wobble-2));
+}
+
+.games-grid .game-card:nth-child(3) {
+  transform: rotate(var(--wobble-3));
 }
 
 .game-card:hover,
 .game-card:focus-visible {
-  transform: rotate(0deg) scale(1.03);
+  transform: rotate(0deg) translateY(-4px) scale(1.03);
   box-shadow: 9px 9px 0 var(--color-ink);
+}
+
+.game-card:active {
+  transform: rotate(0deg) translateY(-1px) scale(1.01);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+.game-card-players {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-pine);
+  background: var(--color-paper);
+  border: 1.5px solid var(--color-pine);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
 }
 
 .game-card-doodle {
   width: 84px;
   height: 84px;
-  margin: 0 auto 1rem;
+  margin: 0.25rem 0 1rem;
   display: block;
+  transition: transform 0.25s ease;
+}
+
+.game-card:hover .game-card-doodle {
+  transform: scale(1.08) rotate(-4deg);
 }
 
 .game-card-title {
@@ -317,10 +576,13 @@ input, textarea {
   margin: 0 0 1.25rem;
   color: var(--color-ink);
   opacity: 0.8;
+  min-height: 2.6em;
 }
 
 .game-card-cta {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 1rem;
@@ -328,36 +590,77 @@ input, textarea {
   background: var(--color-berry);
   color: var(--color-paper);
   border-radius: 999px;
+  transition: gap 0.2s ease;
 }
 
-.games-note {
-  margin-top: 1.75rem;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  opacity: 0.7;
+.game-card:hover .game-card-cta {
+  gap: 0.6rem;
+}
+
+.game-card-soon {
+  opacity: 0.55;
+  border-style: dashed;
+  box-shadow: none;
+  transform: rotate(0deg);
+  cursor: default;
+}
+
+.game-card-soon:hover {
+  transform: rotate(0deg);
+  box-shadow: none;
+}
+
+.game-card-soon .game-card-doodle:hover,
+.game-card-soon:hover .game-card-doodle {
+  transform: none;
 }
 
 /* ============ FOOTER ============ */
 
 .site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   text-align: center;
   padding: 3rem 1.5rem 4rem;
   font-family: var(--font-display);
   color: var(--color-ink);
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.7;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.85rem;
   opacity: 0.6;
 }
 
-.site-footer p {
-  margin: 0;
+.footer-links a {
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
 }
 
 /* ============ IDLE / AMBIENT MOTION (disabled under reduced motion) === */
 
 @media (prefers-reduced-motion: no-preference) {
-  .doodle-die   { animation: float-a 6s ease-in-out infinite; }
-  .doodle-scribble { animation: float-b 7s ease-in-out infinite; }
-  .doodle-xo    { animation: float-a 5.5s ease-in-out infinite; }
-  .scroll-cue   { animation: bob 2.2s ease-in-out infinite; }
+  .doodle-die         { animation: float-a 6s ease-in-out infinite; }
+  .doodle-scribble    { animation: float-b 7s ease-in-out infinite; }
+  .doodle-xo          { animation: float-a 5.5s ease-in-out infinite; }
+  .doodle-controller  { animation: float-b 6.5s ease-in-out infinite; }
+  .doodle-cards       { animation: float-a 7.5s ease-in-out infinite; }
+  .doodle-heart       { animation: pulse 3.2s ease-in-out infinite; }
+  .doodle-star        { animation: pulse 2.6s ease-in-out infinite; }
+  .scroll-cue         { animation: bob 2.2s ease-in-out infinite; }
 }
 
 @keyframes float-a {
@@ -370,13 +673,22 @@ input, textarea {
   50% { transform: translateY(6px) rotate(3deg); }
 }
 
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
 @keyframes bob {
   0%, 100% { transform: translate(-50%, 0); }
   50% { transform: translate(-50%, 6px); }
 }
 
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hero-wordmark, .hero-tagline {
+  .hero-wordmark, .hero-tagline, .hero-actions {
     animation: none;
     opacity: 1;
     transform: none;
@@ -387,6 +699,9 @@ input, textarea {
   .thread path {
     transition: none;
     stroke-dashoffset: 0;
+  }
+  .nav-logo-spark {
+    animation: none;
   }
 }
 
@@ -399,8 +714,11 @@ input, textarea {
 }
 
 @media (min-width: 1024px) {
-  section {
+  section:not(.games-section) {
     max-width: 760px;
+    padding: 8rem 2rem;
+  }
+  .games-section {
     padding: 8rem 2rem;
   }
 }
